@@ -3,112 +3,155 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Quebra-Cabeça Interativo</title>
+  <title>Quebra-Cabeça do Amor</title>
   <style>
     body {
       background: #fce4ec;
-      font-family: Arial, sans-serif;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      margin: 0;
+      flex-direction: column;
     }
+
     #puzzle {
       width: 500px;
       height: 500px;
       background: #fff;
-      border: 10px solid #f06292;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      border: 8px solid #f06292;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
     }
+
     canvas {
       width: 100%;
       height: 100%;
       cursor: grab;
     }
+
+    h1 {
+      color: #d81b60;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
+  <h1>3 MESES DE NÓS</h1>
   <div id="puzzle">
     <canvas id="puzzle-canvas"></canvas>
   </div>
 
   <script>
+    const perguntas = [
+      {
+        pergunta: "Qual a cor da camisa eu estava usando no nosso primeiro encontro?",
+        resposta: "Preto"
+      },
+      {
+        pergunta: "Qual foi o dia da semana do nosso primeiro encontro:",
+        resposta: "Quinta"
+      },
+      {
+        pergunta: "Qual foi o presente que eu te dei que eu mais gostei de montar?",
+        resposta: "Atividade surpresa"
+      },
+      {
+        pergunta: "Que data eu ia te pedir em namoro?",
+        resposta: "17/02"
+      },
+      {
+        pergunta: "Qual música eu acho que mais combina com a nossa história?",
+        resposta: "Ter o coração no chão, Anavitoria"
+      },
+      {
+        pergunta: "Em que momento eu soube que estava apaixonadinho por você?",
+        resposta: "Você acordando depois de Modern family"
+      },
+      {
+        pergunta: "Quantas horas a gente passou em ligação na praia?",
+        resposta: "6h20"
+      },
+      {
+        pergunta: "Para quais amigos meus eu falei de você primeiro?",
+        resposta: "Paula e Gabi"
+      },
+      {
+        pergunta: "O que eu mais amo que você faça?",
+        resposta: "Cante pra mim"
+      },
+      {
+        pergunta: "Quem é o amor da minha vida?",
+        resposta: "Allan sotero"
+      }
+    ];
+
+    let perguntaAtual = 0;
+    let pecasLiberadas = 0;
+
+    function fazerPergunta() {
+      if (perguntaAtual >= perguntas.length) {
+        pecasLiberadas = 100;
+        iniciarJogo();
+        setTimeout(() => {
+          alert("Parabéns, meu campeãozinho! Sabia que você ia conseguir! Muito bom namorar uma pessoa linda e inteligente. Te amo demais!");
+        }, 500);
+        return;
+      }
+
+      const { pergunta, resposta } = perguntas[perguntaAtual];
+      const tentativa = prompt(pergunta);
+
+      if (tentativa && tentativa.trim().toLowerCase() === resposta.toLowerCase()) {
+        pecasLiberadas += 10;
+      } else {
+        pecasLiberadas += 5;
+      }
+
+      perguntaAtual++;
+      iniciarJogo();
+    }
+
     const canvas = document.getElementById('puzzle-canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = 500;
     canvas.height = 500;
 
     const image = new Image();
-    image.src = 'quebra_cabeca_100p.png'; // já está no seu repositório
+    image.src = 'quebra_cabeca_100p.png'; // Certifique-se de que este é o nome EXATO da imagem
 
-    let pieces = [];
-    const rows = 10, cols = 10;
+    const rows = 10;
+    const cols = 10;
     const pieceW = canvas.width / cols;
     const pieceH = canvas.height / rows;
 
-    image.onload = () => {
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          pieces.push({
-            x,
-            y,
-            imgX: x * pieceW,
-            imgY: y * pieceH,
-            placed: false,
-            offsetX: Math.random() * (canvas.width - pieceW),
-            offsetY: Math.random() * (canvas.height - pieceH)
-          });
-        }
-      }
-      draw();
+    image.onload = function () {
+      fazerPergunta();
     };
 
-    function draw() {
+    function iniciarJogo() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let piece of pieces) {
-        ctx.drawImage(
-          image,
-          piece.imgX, piece.imgY, pieceW, pieceH,
-          piece.offsetX, piece.offsetY, pieceW, pieceH
-        );
-      }
-    }
-
-    let selected = null, offset = {};
-
-    canvas.addEventListener('mousedown', e => {
-      const rect = canvas.getBoundingClientRect();
-      const mx = e.clientX - rect.left;
-      const my = e.clientY - rect.top;
-
-      for (let piece of pieces) {
-        if (
-          mx > piece.offsetX &&
-          mx < piece.offsetX + pieceW &&
-          my > piece.offsetY &&
-          my < piece.offsetY + pieceH
-        ) {
-          selected = piece;
-          offset.x = mx - piece.offsetX;
-          offset.y = my - piece.offsetY;
-          break;
+      let count = 0;
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          if (count < pecasLiberadas) {
+            ctx.drawImage(
+              image,
+              x * pieceW, y * pieceH, pieceW, pieceH,
+              x * pieceW, y * pieceH, pieceW, pieceH
+            );
+          }
+          count++;
         }
       }
-    });
 
-    canvas.addEventListener('mousemove', e => {
-      if (selected) {
-        const rect = canvas.getBoundingClientRect();
-        selected.offsetX = e.clientX - rect.left - offset.x;
-        selected.offsetY = e.clientY - rect.top - offset.y;
-        draw();
+      if (pecasLiberadas < 100) {
+        setTimeout(() => {
+          fazerPergunta();
+        }, 800);
       }
-    });
-
-    canvas.addEventListener('mouseup', () => {
-      selected = null;
-    });
+    }
   </script>
 </body>
 </html>
